@@ -1,271 +1,269 @@
-SubDirs := lib
-
-# Set default rule before anything else.
-all: help
-
-include make/config.mk
-include make/util.mk
-include make/AppleBI.mk
-
-# Make sure we don't build with a missing ProjObjRoot.
-ifeq ($(ProjObjRoot),)
-$(error Refusing to build with empty ProjObjRoot variable)
+ifeq ($(DSTROOT),)
+ $(error DSTROOT must be defined.)
+endif
+ifeq ($(OBJROOT),)
+ $(error OBJROOT must be defined.)
+endif
+ifeq ($(SYMROOT),)
+ $(error SYMROOT must be defined.)
 endif
 
-##############
+RC_ARCHS ?= i386 x86_64
+RC_ProjectName ?= Libcompiler_rt
+RC_ProjectSourceVersion ?= 1.0
 
-###
-# Rules
+all : $(SYMROOT)/libcompiler_rt.dylib $(SYMROOT)/libcompiler_rt-dyld.a
+INSTALL_TARGET := install-MacOSX
 
-###
-# Top level targets
+SDKROOT ?= macosx10.13
+SDKROOT_EXPANDED = $(shell xcrun --sdk $(SDKROOT) --show-sdk-path)
 
-# FIXME: Document the available subtargets.
-help:
-	@echo "usage: make [{VARIABLE=VALUE}*] target"
-	@echo
-	@echo "User variables:"
-	@echo "  VERBOSE=1: Use to show all commands [default=0]"
-	@echo
-	@echo "Available targets:"
-	@echo "  <platform name>: build the libraries for 'platform'"
-	@echo "  clean:           clean all configurations"
-	@echo "  test:            run unit tests"
-	@echo
-	@echo "  info-platforms:  list available platforms"
-	@echo "  help-devel:      print additional help for developers"
-	@echo
+# Copies any public headers to DSTROOT.
+installhdrs:
+	@echo No headers to install.
 
-help-devel: help
-	@echo "Development targets:"
-	@echo "  <platform name>-<config name>:"
-	@echo "    build the libraries for a single platform config"
-	@echo "  <platform name>-<config name>-<arch name>:"
-	@echo "    build the libraries for a single config and arch"
-	@echo "  info-functions: list available compiler-rt functions"
-	@echo "  help-hidden: print help for Makefile debugging"
-	@echo
+# Copies source code to SRCROOT.
+installsrc:
+	cp -r . $(SRCROOT)
 
-help-hidden: help-devel
-	@echo "Debugging variables:"
-	@echo "  DEBUGMAKE=1: enable some Makefile logging [default=]"
-	@echo "           =2: enable more Makefile logging"
-	@echo
-	@echo "Debugging targets:"
-	@echo "  make-print-FOO: print information on the variable 'FOO'"
-	@echo
+install:  $(INSTALL_TARGET)
 
-info-functions:
-	@echo "compiler-rt Available Functions"
-	@echo
-	@echo "All Functions: $(AvailableFunctions)"
-	@$(foreach fn,$(AvailableFunctions),\
-	  printf "  %-20s - available in (%s)\n" $(fn)\
-	    "$(foreach key,$(AvailableIn.$(fn)),$($(key).Dir))";)
+# Copy results to DSTROOT.
+install-MacOSX : $(SYMROOT)/libcompiler_rt.dylib \
+                 $(SYMROOT)/libcompiler_rt-dyld.a
+	mkdir -p $(DSTROOT)/usr/local/lib/dyld
+	cp $(SYMROOT)/libcompiler_rt-dyld.a  \
+				    $(DSTROOT)/usr/local/lib/dyld/libcompiler_rt.a
+	mkdir -p $(DSTROOT)/usr/lib/system
+	strip -S $(SYMROOT)/libcompiler_rt.dylib \
+	    -o $(DSTROOT)/usr/lib/system/libcompiler_rt.dylib
+	cd $(DSTROOT)/usr/lib/system; \
+	    ln -s libcompiler_rt.dylib libcompiler_rt_profile.dylib; \
+	    ln -s libcompiler_rt.dylib libcompiler_rt_debug.dylib
 
-info-platforms:
-	@echo "compiler-rt Available Platforms"
-	@echo
-	@echo "Platforms:"
-	@$(foreach key,$(PlatformKeys),\
-	  printf "  %s - from '%s'\n" $($(key).Name) $($(key).Path);\
-	  printf "    %s\n" "$($(key).Description)";\
-	  printf "    Configurations: %s\n\n" "$($(key).Configs)";)
+# Rule to make each dylib slice
+$(OBJROOT)/libcompiler_rt-%.dylib : $(OBJROOT)/%/libcompiler_rt.a
+	echo "const char vers[] = \"@(#) $(RC_ProjectName)-$(RC_ProjectSourceVersion)\"; " > $(OBJROOT)/version.c
+	clang \
+	   $(OBJROOT)/version.c -arch $* -dynamiclib \
+	   -install_name /usr/lib/system/libcompiler_rt.dylib \
+	   -compatibility_version 1 -current_version $(RC_ProjectSourceVersion) \
+	   -nodefaultlibs -umbrella System -dead_strip \
+	   -L$(SDKROOT_EXPANDED)/usr/lib/system \
+	   -Wl,-upward-lunwind \
+	   -Wl,-upward-lsystem_m \
+	   -Wl,-upward-lsystem_c \
+	   -Wl,-upward-lsystem_kernel \
+	   -Wl,-upward-lsystem_platform \
+	   -Wl,-ldyld \
+	   $(DYLIB_FLAGS) -Wl,-force_load,$^ -o $@
 
-# Provide default clean target which is extended by other templates.
-.PHONY: clean
-clean::
+# Rule to make fat dylib
+$(SYMROOT)/libcompiler_rt.dylib: $(foreach arch,$(filter-out armv4t,$(RC_ARCHS)), \
+                                        $(OBJROOT)/libcompiler_rt-$(arch).dylib)
+	lipo -create $^ -o  $@
+	dsymutil $@
 
-# Test
-.PHONY: test
-test:
-	cd test/Unit && ./test
+# Rule to make fat archive
+$(SYMROOT)/libcompiler_rt-static.a : $(foreach arch,$(RC_ARCHS), \
+                         $(OBJROOT)/$(arch)/libcompiler_rt.a)
+	lipo -create $^ -o  $@
 
-###
-# Directory handling magic.
+# rule to make each archive slice for dyld (which removes a few archive members)
+$(OBJROOT)/libcompiler_rt-dyld-%.a : $(OBJROOT)/%/libcompiler_rt.a
+	cp $^ $@
+	DEL_LIST=`$(AR)  -t $@ | egrep 'apple_versioning|gcc_personality_v0|eprintf' | xargs echo` ; \
+	if [ -n "$${DEL_LIST}" ] ; \
+	then  \
+		ar -d $@ $${DEL_LIST}; \
+		ranlib $@ ; \
+	fi
 
-# Create directories as needed, and timestamp their creation.
-%/.dir:
-	$(Summary) "  MKDIR:     $*"
-	$(Verb) $(MKDIR) $* > /dev/null
-	$(Verb) echo 'Created.' > $@
+# rule to make make archive for dyld
+$(SYMROOT)/libcompiler_rt-dyld.a : $(foreach arch,$(RC_ARCHS), \
+                         $(OBJROOT)/libcompiler_rt-dyld-$(arch).a)
+	lipo -create $^ -o  $@
 
-# Remove directories
-%/.remove:
-	$(Verb) $(RM) -r $*
+SOURCES += \
+lib/builtins/absvdi2.c \
+lib/builtins/absvsi2.c \
+lib/builtins/absvti2.c \
+lib/builtins/adddf3.c \
+lib/builtins/addsf3.c \
+lib/builtins/addtf3.c \
+lib/builtins/addvdi3.c \
+lib/builtins/addvsi3.c \
+lib/builtins/addvti3.c \
+lib/builtins/apple_versioning.c \
+lib/builtins/ashldi3.c \
+lib/builtins/ashlti3.c \
+lib/builtins/ashrdi3.c \
+lib/builtins/ashrti3.c \
+lib/builtins/atomic.c \
+lib/builtins/atomic_flag_clear.c \
+lib/builtins/atomic_flag_clear_explicit.c \
+lib/builtins/atomic_flag_test_and_set.c \
+lib/builtins/atomic_flag_test_and_set_explicit.c \
+lib/builtins/atomic_signal_fence.c \
+lib/builtins/atomic_thread_fence.c \
+lib/builtins/bswapdi2.c \
+lib/builtins/bswapsi2.c \
+lib/builtins/clear_cache.c \
+lib/builtins/clzdi2.c \
+lib/builtins/clzsi2.c \
+lib/builtins/clzti2.c \
+lib/builtins/cmpdi2.c \
+lib/builtins/cmpti2.c \
+lib/builtins/comparedf2.c \
+lib/builtins/comparesf2.c \
+lib/builtins/comparetf2.c \
+lib/builtins/cpu_model.c \
+lib/builtins/ctzdi2.c \
+lib/builtins/ctzsi2.c \
+lib/builtins/ctzti2.c \
+lib/builtins/divdc3.c \
+lib/builtins/divdf3.c \
+lib/builtins/divdi3.c \
+lib/builtins/divmoddi4.c \
+lib/builtins/divmodsi4.c \
+lib/builtins/divsc3.c \
+lib/builtins/divsf3.c \
+lib/builtins/divsi3.c \
+lib/builtins/divtc3.c \
+lib/builtins/divtf3.c \
+lib/builtins/divti3.c \
+lib/builtins/divxc3.c \
+lib/builtins/enable_execute_stack.c \
+lib/builtins/eprintf.c \
+lib/builtins/extenddftf2.c \
+lib/builtins/extendhfsf2.c \
+lib/builtins/extendsfdf2.c \
+lib/builtins/extendsftf2.c \
+lib/builtins/ffsdi2.c \
+lib/builtins/ffssi2.c \
+lib/builtins/ffsti2.c \
+lib/builtins/fixdfdi.c \
+lib/builtins/fixdfsi.c \
+lib/builtins/fixdfti.c \
+lib/builtins/fixsfdi.c \
+lib/builtins/fixsfsi.c \
+lib/builtins/fixsfti.c \
+lib/builtins/fixtfdi.c \
+lib/builtins/fixtfsi.c \
+lib/builtins/fixtfti.c \
+lib/builtins/fixunsdfdi.c \
+lib/builtins/fixunsdfsi.c \
+lib/builtins/fixunsdfti.c \
+lib/builtins/fixunssfdi.c \
+lib/builtins/fixunssfsi.c \
+lib/builtins/fixunssfti.c \
+lib/builtins/fixunstfdi.c \
+lib/builtins/fixunstfsi.c \
+lib/builtins/fixunstfti.c \
+lib/builtins/fixunsxfdi.c \
+lib/builtins/fixunsxfsi.c \
+lib/builtins/fixunsxfti.c \
+lib/builtins/fixxfdi.c \
+lib/builtins/fixxfti.c \
+lib/builtins/floatdidf.c \
+lib/builtins/floatdisf.c \
+lib/builtins/floatditf.c \
+lib/builtins/floatdixf.c \
+lib/builtins/floatsidf.c \
+lib/builtins/floatsisf.c \
+lib/builtins/floatsitf.c \
+lib/builtins/floattidf.c \
+lib/builtins/floattisf.c \
+lib/builtins/floattitf.c \
+lib/builtins/floattixf.c \
+lib/builtins/floatundidf.c \
+lib/builtins/floatundisf.c \
+lib/builtins/floatunditf.c \
+lib/builtins/floatundixf.c \
+lib/builtins/floatunsidf.c \
+lib/builtins/floatunsisf.c \
+lib/builtins/floatunsitf.c \
+lib/builtins/floatuntidf.c \
+lib/builtins/floatuntisf.c \
+lib/builtins/floatuntitf.c \
+lib/builtins/floatuntixf.c \
+lib/builtins/gcc_personality_v0.c \
+lib/builtins/int_util.c \
+lib/builtins/lshrdi3.c \
+lib/builtins/lshrti3.c \
+lib/builtins/moddi3.c \
+lib/builtins/modsi3.c \
+lib/builtins/modti3.c \
+lib/builtins/muldc3.c \
+lib/builtins/muldf3.c \
+lib/builtins/muldi3.c \
+lib/builtins/mulodi4.c \
+lib/builtins/mulosi4.c \
+lib/builtins/muloti4.c \
+lib/builtins/mulsc3.c \
+lib/builtins/mulsf3.c \
+lib/builtins/multc3.c \
+lib/builtins/multf3.c \
+lib/builtins/multi3.c \
+lib/builtins/mulvdi3.c \
+lib/builtins/mulvsi3.c \
+lib/builtins/mulvti3.c \
+lib/builtins/mulxc3.c \
+lib/builtins/negdf2.c \
+lib/builtins/negdi2.c \
+lib/builtins/negsf2.c \
+lib/builtins/negti2.c \
+lib/builtins/negvdi2.c \
+lib/builtins/negvsi2.c \
+lib/builtins/negvti2.c \
+lib/builtins/paritydi2.c \
+lib/builtins/paritysi2.c \
+lib/builtins/parityti2.c \
+lib/builtins/popcountdi2.c \
+lib/builtins/popcountsi2.c \
+lib/builtins/popcountti2.c \
+lib/builtins/powidf2.c \
+lib/builtins/powisf2.c \
+lib/builtins/powitf2.c \
+lib/builtins/powixf2.c \
+lib/builtins/subdf3.c \
+lib/builtins/subsf3.c \
+lib/builtins/subtf3.c \
+lib/builtins/subvdi3.c \
+lib/builtins/subvsi3.c \
+lib/builtins/subvti3.c \
+lib/builtins/trampoline_setup.c \
+lib/builtins/truncdfhf2.c \
+lib/builtins/truncdfsf2.c \
+lib/builtins/truncsfhf2.c \
+lib/builtins/trunctfdf2.c \
+lib/builtins/trunctfsf2.c \
+lib/builtins/ucmpdi2.c \
+lib/builtins/ucmpti2.c \
+lib/builtins/udivdi3.c \
+lib/builtins/udivmoddi4.c \
+lib/builtins/udivmodsi4.c \
+lib/builtins/udivmodti4.c \
+lib/builtins/udivsi3.c \
+lib/builtins/udivti3.c \
+lib/builtins/umoddi3.c \
+lib/builtins/umodsi3.c \
+lib/builtins/umodti3.c \
 
-###
-# Include child makefile fragments
+define ArchTemplate
 
-Dir := .
-include make/subdir.mk
-include make/lib_info.mk
-include make/lib_util.mk
-include make/lib_platforms.mk
+OBJECTS-$(1) = $$(foreach file,$$(SOURCES),$$(OBJROOT)/$(1)/$$(file).o)
 
-###
-# Define Platform Rules
+$$(OBJROOT)/$(1)/libcompiler_rt.a : $$(OBJECTS-$(1))
+	ar crs $$@ $$^
 
-define PerPlatform_template
-$(call Set,Tmp.Key,$(1))
-$(call Set,Tmp.Name,$($(Tmp.Key).Name))
-$(call Set,Tmp.Configs,$($(Tmp.Key).Configs))
-$(call Set,Tmp.ObjPath,$(ProjObjRoot)/$(Tmp.Name))
+$$(OBJROOT)/$(1)/%.o : %
+	@mkdir -p $$(dir $$@)
+	clang -arch $(1) -c -o $$@ $$^ $$(CLANG_FLAGS)
 
-# Top-Level Platform Target
-$(Tmp.Name):: $(Tmp.Configs:%=$(Tmp.Name)-%)
-.PHONY: $(Tmp.Name)
-
-clean::
-	$(Verb) rm -rf $(Tmp.ObjPath)
-
-# Per-Config Libraries
-$(foreach config,$(Tmp.Configs),\
-  $(call PerPlatformConfig_template,$(config)))
 endef
 
-define PerPlatformConfig_template
-$(call Set,Tmp.Config,$(1))
-$(call Set,Tmp.ObjPath,$(ProjObjRoot)/$(Tmp.Name)/$(Tmp.Config))
-$(call Set,Tmp.SHARED_LIBRARY,$(strip \
-  $(call GetCNAVar,SHARED_LIBRARY,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.SHARED_LIBRARY_SUFFIX,$(strip \
-  $(call GetCNAVar,SHARED_LIBRARY_SUFFIX,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
+$(eval $(call ArchTemplate,i386))
+$(eval $(call ArchTemplate,x86_64))
 
-# Compute the library suffix.
-$(if $(call streq,1,$(Tmp.SHARED_LIBRARY)),
-  $(call Set,Tmp.LibrarySuffix,$(Tmp.SHARED_LIBRARY_SUFFIX)),
-  $(call Set,Tmp.LibrarySuffix,a))
-
-# Compute the archs to build, depending on whether this is a universal build or
-# not.
-$(call Set,Tmp.ArchsToBuild,\
-  $(if $(call IsDefined,$(Tmp.Key).UniversalArchs),\
-       $(strip \
-         $(or $($(Tmp.Key).UniversalArchs.$(Tmp.Config)),\
-              $($(Tmp.Key).UniversalArchs))),\
-       $(call VarOrDefault,$(Tmp.Key).Arch.$(Tmp.Config),$($(Tmp.Key).Arch))))
-
-# Copy or lipo to create the per-config library.
-$(call Set,Tmp.Inputs,$(Tmp.ArchsToBuild:%=$(Tmp.ObjPath)/%/libcompiler_rt.$(Tmp.LibrarySuffix)))
-$(Tmp.ObjPath)/libcompiler_rt.$(Tmp.LibrarySuffix): $(Tmp.Inputs) $(Tmp.ObjPath)/.dir
-	$(Summary) "  FINAL-ARCHIVE: $(Tmp.Name)/$(Tmp.Config): $$@"
-	-$(Verb) $(RM) $$@
-	$(if $(call streq,1,$(words $(Tmp.ArchsToBuild))), \
-	  $(Verb) $(CP) $(Tmp.Inputs) $$@, \
-	  $(Verb) $(LIPO) -create -output $$@ $(Tmp.Inputs))
-.PRECIOUS: $(Tmp.ObjPath)/.dir
-
-# Per-Config Targets
-$(Tmp.Name)-$(Tmp.Config):: $(Tmp.ObjPath)/libcompiler_rt.$(Tmp.LibrarySuffix)
-.PHONY: $(Tmp.Name)-$(Tmp.Config)
-
-# Per-Config-Arch Libraries
-$(foreach arch,$(Tmp.ArchsToBuild),\
-  $(call PerPlatformConfigArch_template,$(arch)))
-endef
-
-define PerPlatformConfigArch_template
-$(call Set,Tmp.Arch,$(1))
-$(call Set,Tmp.ObjPath,$(ProjObjRoot)/$(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch))
-$(call Set,Tmp.Functions,$(strip \
-  $(AlwaysRequiredModules) \
-  $(call GetCNAVar,FUNCTIONS,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.Optimized,$(strip \
-  $(call GetCNAVar,OPTIMIZED,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.AR,$(strip \
-  $(call GetCNAVar,AR,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.ARFLAGS,$(strip \
-  $(call GetCNAVar,ARFLAGS,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.CC,$(strip \
-  $(call GetCNAVar,CC,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.LDFLAGS,$(strip \
-  $(call GetCNAVar,LDFLAGS,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.RANLIB,$(strip \
-  $(call GetCNAVar,RANLIB,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.RANLIBFLAGS,$(strip \
-  $(call GetCNAVar,RANLIBFLAGS,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.SHARED_LIBRARY,$(strip \
-  $(call GetCNAVar,SHARED_LIBRARY,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-
-# Compute the library suffix.
-$(if $(call streq,1,$(Tmp.SHARED_LIBRARY)),
-  $(call Set,Tmp.LibrarySuffix,$(Tmp.SHARED_LIBRARY_SUFFIX)),
-  $(call Set,Tmp.LibrarySuffix,a))
-
-# Compute the object inputs for this library.
-$(call Set,Tmp.Inputs,\
-  $(foreach fn,$(sort $(Tmp.Functions)),\
-    $(call Set,Tmp.FnDir,\
-      $(call SelectFunctionDir,$(Tmp.Config),$(Tmp.Arch),$(fn),$(Tmp.Optimized)))\
-    $(Tmp.ObjPath)/$(Tmp.FnDir)/$(fn).o))
-$(Tmp.ObjPath)/libcompiler_rt.a: $(Tmp.Inputs) $(Tmp.ObjPath)/.dir
-	$(Summary) "  ARCHIVE:   $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$@"
-	-$(Verb) $(RM) $$@
-	$(Verb) $(Tmp.AR) $(Tmp.ARFLAGS) $$@ $(Tmp.Inputs)
-	$(Verb) $(Tmp.RANLIB) $(Tmp.RANLIBFLAGS) $$@
-$(Tmp.ObjPath)/libcompiler_rt.dylib: $(Tmp.Inputs) $(Tmp.ObjPath)/.dir
-	$(Summary) "  DYLIB:   $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$@"
-	$(Verb) $(Tmp.CC) -arch $(Tmp.Arch) -dynamiclib -o $$@ \
-	  $(Tmp.Inputs) $(Tmp.LDFLAGS)
-$(Tmp.ObjPath)/libcompiler_rt.so: $(Tmp.Inputs) $(Tmp.ObjPath)/.dir
-	$(Summary) "  SO:   $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$@"
-	$(Verb) $(Tmp.CC) -shared -o $$@ \
-	  $(Tmp.Inputs) $(Tmp.LDFLAGS)
-.PRECIOUS: $(Tmp.ObjPath)/.dir
-
-# Per-Config-Arch Targets
-$(Tmp.Name)-$(Tmp.Config)-$(Tmp.Arch):: $(Tmp.ObjPath)/libcompiler_rt.$(Tmp.LibrarySuffix)
-.PHONY: $(Tmp.Name)-$(Tmp.Config)-$(Tmp.Arch)
-
-# Per-Config-Arch-SubDir Objects
-$(foreach key,$(SubDirKeys),\
-  $(call PerPlatformConfigArchSubDir_template,$(key)))
-endef
-
-define PerPlatformConfigArchSubDir_template
-$(call Set,Tmp.SubDirKey,$(1))
-$(call Set,Tmp.SubDir,$($(Tmp.SubDirKey).Dir))
-$(call Set,Tmp.SrcPath,$(ProjSrcRoot)/$(Tmp.SubDir))
-$(call Set,Tmp.ObjPath,$(ProjObjRoot)/$(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch)/$(Tmp.SubDirKey))
-$(call Set,Tmp.Dependencies,$($(Tmp.SubDirKey).Dependencies))
-$(call Set,Tmp.CC,$(strip \
-  $(call GetCNAVar,CC,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.KERNEL_USE,$(strip \
-  $(call GetCNAVar,KERNEL_USE,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.VISIBILITY_HIDDEN,$(strip \
-  $(call GetCNAVar,VISIBILITY_HIDDEN,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-$(call Set,Tmp.CFLAGS,$(strip \
-  $(if $(call IsDefined,$(Tmp.Key).UniversalArchs),-arch $(Tmp.Arch),)\
-  $(if $(call streq,$(Tmp.VISIBILITY_HIDDEN),1),\
-       -fvisibility=hidden -DVISIBILITY_HIDDEN,)\
-  $(if $(call streq,$(Tmp.KERNEL_USE),1),\
-       -mkernel -DKERNEL_USE,)\
-  $(call GetCNAVar,CFLAGS,$(Tmp.Key),$(Tmp.Config),$(Tmp.Arch))))
-
-$(Tmp.ObjPath)/%.o: $(Tmp.SrcPath)/%.s $(Tmp.Dependencies) $(Tmp.ObjPath)/.dir
-	$(Summary) "  ASSEMBLE:  $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$<"
-	$(Verb) $(Tmp.CC) $(COMMON_ASMFLAGS) $(Tmp.CFLAGS)  -c -o $$@ $$<
-$(Tmp.ObjPath)/%.o: $(Tmp.SrcPath)/%.S $(Tmp.Dependencies) $(Tmp.ObjPath)/.dir
-	$(Summary) "  ASSEMBLE:  $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$<"
-	$(Verb) $(Tmp.CC) $(COMMON_ASMFLAGS) $(Tmp.CFLAGS) -c -o $$@ $$<
-$(Tmp.ObjPath)/%.o: $(Tmp.SrcPath)/%.c $(Tmp.Dependencies) $(Tmp.ObjPath)/.dir
-	$(Summary) "  COMPILE:   $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$<"
-	$(Verb) $(Tmp.CC) $(COMMON_CFLAGS) $(Tmp.CFLAGS) -c -o $$@ $$<
-$(Tmp.ObjPath)/%.o: $(Tmp.SrcPath)/%.cc $(Tmp.Dependencies) $(Tmp.ObjPath)/.dir
-	$(Summary) "  COMPILE:   $(Tmp.Name)/$(Tmp.Config)/$(Tmp.Arch): $$<"
-	$(Verb) $(Tmp.CC) $(COMMON_CXXFLAGS) $(Tmp.CFLAGS) -c -o $$@ $$<
-.PRECIOUS: $(Tmp.ObjPath)/.dir
-
-endef
-
-# Run templates.
-$(foreach key,$(PlatformKeys),\
-  $(eval $(call PerPlatform_template,$(key))))
-
-###
-
-ifneq ($(DEBUGMAKE),)
-  $(info MAKE: Done processing Makefile)
-  $(info  )
-endif
+CLANG_FLAGS = -I$(SRCROOT)/include -I$(SRCROOT)/lib -g
