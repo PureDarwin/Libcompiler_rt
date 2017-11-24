@@ -273,5 +273,3 @@ endef
 
 $(eval $(call ArchTemplate,i386))
 $(eval $(call ArchTemplate,x86_64))
-
-CLANG_FLAGS = -I$(SRCROOT)/include -I$(SRCROOT)/lib -g
