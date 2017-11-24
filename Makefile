@@ -171,6 +171,7 @@ lib/builtins/int_util.c \
 lib/builtins/lshrdi3.c \
 lib/builtins/lshrti3.c \
 lib/builtins/moddi3.c \
+lib/builtins/modti3.c \
 lib/builtins/muldc3.c \
 lib/builtins/muldi3.c \
 lib/builtins/mulodi4.c \
