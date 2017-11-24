@@ -248,11 +248,52 @@ lib/builtins/udivsi3.c \
 lib/builtins/udivti3.c \
 lib/builtins/umoddi3.c \
 lib/builtins/umodsi3.c \
-lib/builtins/umodti3.c \
+lib/builtins/umodti3.c
+
+SOURCES-EXCLUDE-i386 = \
+lib/builtins/absvti2.c \
+lib/builtins/addvti3.c \
+lib/builtins/ashlti3.c \
+lib/builtins/ashrti3.c \
+lib/builtins/clzti2.c \
+lib/builtins/cmpti2.c \
+lib/builtins/ctzti2.c \
+lib/builtins/divti3.c \
+lib/builtins/ffsti2.c \
+lib/builtins/fixdfti.c \
+lib/builtins/fixsfti.c \
+lib/builtins/fixunsdfti.c \
+lib/builtins/fixunssfti.c \
+lib/builtins/fixunsxfti.c \
+lib/builtins/fixxfti.c \
+lib/builtins/floattidf.c \
+lib/builtins/floattisf.c \
+lib/builtins/floattixf.c \
+lib/builtins/floatuntidf.c \
+lib/builtins/floatuntisf.c \
+lib/builtins/floatuntixf.c \
+lib/builtins/lshrti3.c \
+lib/builtins/modti3.c \
+lib/builtins/muloti4.c \
+lib/builtins/multi3.c \
+lib/builtins/mulvti3.c \
+lib/builtins/negti2.c \
+lib/builtins/negvti2.c \
+lib/builtins/parityti2.c \
+lib/builtins/popcountti2.c \
+lib/builtins/subvti3.c \
+lib/builtins/ucmpti2.c \
+lib/builtins/udivmodti4.c \
+lib/builtins/udivti3.c \
+lib/builtins/umodti3.c
 
 define ArchTemplate
 
-OBJECTS-$(1) = $$(foreach file,$$(SOURCES),$$(OBJROOT)/$(1)/$$(file).o)
+SOURCES-$(1) = $$(filter-out $$(SOURCES-EXCLUDE-$(1)),$$(SOURCES))
+ifeq ($$(SOURCES-$(1)),)
+ $$(error No sources for architecture $(1))
+endif
+OBJECTS-$(1) = $$(foreach file,$$(SOURCES-$(1)),$$(OBJROOT)/$(1)/$$(file).o)
 
 $$(OBJROOT)/$(1)/libcompiler_rt.a : $$(OBJECTS-$(1))
 	ar crs $$@ $$^
