@@ -85,174 +85,174 @@ $(SYMROOT)/libcompiler_rt-dyld.a : $(foreach arch,$(RC_ARCHS), \
 	lipo -create $^ -o  $@
 
 SOURCES += \
-lib/builtins/absvdi2.c \
-lib/builtins/absvsi2.c \
-lib/builtins/absvti2.c \
-lib/builtins/addtf3.c \
-lib/builtins/addvdi3.c \
-lib/builtins/addvsi3.c \
-lib/builtins/addvti3.c \
-lib/builtins/apple_versioning.c \
-lib/builtins/ashldi3.c \
-lib/builtins/ashlti3.c \
-lib/builtins/ashrdi3.c \
-lib/builtins/ashrti3.c \
-lib/builtins/atomic.c \
-lib/builtins/atomic_flag_clear.c \
-lib/builtins/atomic_flag_clear_explicit.c \
-lib/builtins/atomic_flag_test_and_set.c \
-lib/builtins/atomic_flag_test_and_set_explicit.c \
-lib/builtins/atomic_signal_fence.c \
-lib/builtins/atomic_thread_fence.c \
-lib/builtins/clear_cache.c \
-lib/builtins/clzdi2.c \
-lib/builtins/clzsi2.c \
-lib/builtins/clzti2.c \
-lib/builtins/cmpdi2.c \
-lib/builtins/cmpti2.c \
-lib/builtins/comparetf2.c \
-lib/builtins/ctzdi2.c \
-lib/builtins/ctzsi2.c \
-lib/builtins/ctzti2.c \
-lib/builtins/divdc3.c \
-lib/builtins/divdi3.c \
-lib/builtins/divsc3.c \
-lib/builtins/divtf3.c \
-lib/builtins/divti3.c \
-lib/builtins/divxc3.c \
-lib/builtins/enable_execute_stack.c \
-lib/builtins/eprintf.c \
-lib/builtins/extenddftf2.c \
-lib/builtins/extendhfsf2.c \
-lib/builtins/extendsftf2.c \
-lib/builtins/ffsdi2.c \
-lib/builtins/ffsti2.c \
-lib/builtins/fixdfdi.c \
-lib/builtins/fixdfti.c \
-lib/builtins/fixsfdi.c \
-lib/builtins/fixsfti.c \
-lib/builtins/fixtfdi.c \
-lib/builtins/fixtfsi.c \
-lib/builtins/fixtfti.c \
-lib/builtins/fixunsdfdi.c \
-lib/builtins/fixunsdfsi.c \
-lib/builtins/fixunsdfti.c \
-lib/builtins/fixunssfdi.c \
-lib/builtins/fixunssfsi.c \
-lib/builtins/fixunssfti.c \
-lib/builtins/fixunstfdi.c \
-lib/builtins/fixunstfsi.c \
-lib/builtins/fixunstfti.c \
-lib/builtins/fixunsxfdi.c \
-lib/builtins/fixunsxfsi.c \
-lib/builtins/fixunsxfti.c \
-lib/builtins/fixxfdi.c \
-lib/builtins/fixxfti.c \
-lib/builtins/floatdidf.c \
-lib/builtins/floatdisf.c \
-lib/builtins/floatditf.c \
-lib/builtins/floatdixf.c \
-lib/builtins/floatsitf.c \
-lib/builtins/floattidf.c \
-lib/builtins/floattisf.c \
-lib/builtins/floattitf.c \
-lib/builtins/floattixf.c \
-lib/builtins/floatundidf.c \
-lib/builtins/floatundisf.c \
-lib/builtins/floatunditf.c \
-lib/builtins/floatundixf.c \
-lib/builtins/floatunsitf.c \
-lib/builtins/floatuntidf.c \
-lib/builtins/floatuntisf.c \
-lib/builtins/floatuntitf.c \
-lib/builtins/floatuntixf.c \
-lib/builtins/gcc_personality_v0.c \
-lib/builtins/int_util.c \
-lib/builtins/lshrdi3.c \
-lib/builtins/lshrti3.c \
-lib/builtins/moddi3.c \
-lib/builtins/modti3.c \
-lib/builtins/muldc3.c \
-lib/builtins/muldi3.c \
-lib/builtins/mulodi4.c \
-lib/builtins/mulosi4.c \
-lib/builtins/muloti4.c \
-lib/builtins/mulsc3.c \
-lib/builtins/multf3.c \
-lib/builtins/multi3.c \
-lib/builtins/mulvdi3.c \
-lib/builtins/mulvsi3.c \
-lib/builtins/mulvti3.c \
-lib/builtins/mulxc3.c \
-lib/builtins/negdi2.c \
-lib/builtins/negti2.c \
-lib/builtins/negvdi2.c \
-lib/builtins/negvsi2.c \
-lib/builtins/negvti2.c \
-lib/builtins/paritydi2.c \
-lib/builtins/paritysi2.c \
-lib/builtins/parityti2.c \
-lib/builtins/popcountdi2.c \
-lib/builtins/popcountsi2.c \
-lib/builtins/popcountti2.c \
-lib/builtins/powidf2.c \
-lib/builtins/powisf2.c \
-lib/builtins/powitf2.c \
-lib/builtins/powixf2.c \
-lib/builtins/subtf3.c \
-lib/builtins/subvdi3.c \
-lib/builtins/subvsi3.c \
-lib/builtins/subvti3.c \
-lib/builtins/trampoline_setup.c \
-lib/builtins/truncdfhf2.c \
-lib/builtins/truncsfhf2.c \
-lib/builtins/trunctfdf2.c \
-lib/builtins/trunctfsf2.c \
-lib/builtins/ucmpdi2.c \
-lib/builtins/ucmpti2.c \
-lib/builtins/udivdi3.c \
-lib/builtins/udivmoddi4.c \
-lib/builtins/udivmodti4.c \
-lib/builtins/udivti3.c \
-lib/builtins/umoddi3.c \
-lib/builtins/umodti3.c
+	lib/absvdi2.c \
+	lib/absvsi2.c \
+	lib/absvti2.c \
+	lib/addtf3.c \
+	lib/addvdi3.c \
+	lib/addvsi3.c \
+	lib/addvti3.c \
+	lib/apple_versioning.c \
+	lib/ashldi3.c \
+	lib/ashlti3.c \
+	lib/ashrdi3.c \
+	lib/ashrti3.c \
+	lib/atomic.c \
+	lib/atomic_flag_clear.c \
+	lib/atomic_flag_clear_explicit.c \
+	lib/atomic_flag_test_and_set.c \
+	lib/atomic_flag_test_and_set_explicit.c \
+	lib/atomic_signal_fence.c \
+	lib/atomic_thread_fence.c \
+	lib/clear_cache.c \
+	lib/clzdi2.c \
+	lib/clzsi2.c \
+	lib/clzti2.c \
+	lib/cmpdi2.c \
+	lib/cmpti2.c \
+	lib/comparetf2.c \
+	lib/ctzdi2.c \
+	lib/ctzsi2.c \
+	lib/ctzti2.c \
+	lib/divdc3.c \
+	lib/divdi3.c \
+	lib/divsc3.c \
+	lib/divtf3.c \
+	lib/divti3.c \
+	lib/divxc3.c \
+	lib/enable_execute_stack.c \
+	lib/eprintf.c \
+	lib/extenddftf2.c \
+	lib/extendhfsf2.c \
+	lib/extendsftf2.c \
+	lib/ffsdi2.c \
+	lib/ffsti2.c \
+	lib/fixdfdi.c \
+	lib/fixdfti.c \
+	lib/fixsfdi.c \
+	lib/fixsfti.c \
+	lib/fixtfdi.c \
+	lib/fixtfsi.c \
+	lib/fixtfti.c \
+	lib/fixunsdfdi.c \
+	lib/fixunsdfsi.c \
+	lib/fixunsdfti.c \
+	lib/fixunssfdi.c \
+	lib/fixunssfsi.c \
+	lib/fixunssfti.c \
+	lib/fixunstfdi.c \
+	lib/fixunstfsi.c \
+	lib/fixunstfti.c \
+	lib/fixunsxfdi.c \
+	lib/fixunsxfsi.c \
+	lib/fixunsxfti.c \
+	lib/fixxfdi.c \
+	lib/fixxfti.c \
+	lib/floatdidf.c \
+	lib/floatdisf.c \
+	lib/floatditf.c \
+	lib/floatdixf.c \
+	lib/floatsitf.c \
+	lib/floattidf.c \
+	lib/floattisf.c \
+	lib/floattitf.c \
+	lib/floattixf.c \
+	lib/floatundidf.c \
+	lib/floatundisf.c \
+	lib/floatunditf.c \
+	lib/floatundixf.c \
+	lib/floatunsitf.c \
+	lib/floatuntidf.c \
+	lib/floatuntisf.c \
+	lib/floatuntitf.c \
+	lib/floatuntixf.c \
+	lib/gcc_personality_v0.c \
+	lib/int_util.c \
+	lib/lshrdi3.c \
+	lib/lshrti3.c \
+	lib/moddi3.c \
+	lib/modti3.c \
+	lib/muldc3.c \
+	lib/muldi3.c \
+	lib/mulodi4.c \
+	lib/mulosi4.c \
+	lib/muloti4.c \
+	lib/mulsc3.c \
+	lib/multf3.c \
+	lib/multi3.c \
+	lib/mulvdi3.c \
+	lib/mulvsi3.c \
+	lib/mulvti3.c \
+	lib/mulxc3.c \
+	lib/negdi2.c \
+	lib/negti2.c \
+	lib/negvdi2.c \
+	lib/negvsi2.c \
+	lib/negvti2.c \
+	lib/paritydi2.c \
+	lib/paritysi2.c \
+	lib/parityti2.c \
+	lib/popcountdi2.c \
+	lib/popcountsi2.c \
+	lib/popcountti2.c \
+	lib/powidf2.c \
+	lib/powisf2.c \
+	lib/powitf2.c \
+	lib/powixf2.c \
+	lib/subtf3.c \
+	lib/subvdi3.c \
+	lib/subvsi3.c \
+	lib/subvti3.c \
+	lib/trampoline_setup.c \
+	lib/truncdfhf2.c \
+	lib/truncsfhf2.c \
+	lib/trunctfdf2.c \
+	lib/trunctfsf2.c \
+	lib/ucmpdi2.c \
+	lib/ucmpti2.c \
+	lib/udivdi3.c \
+	lib/udivmoddi4.c \
+	lib/udivmodti4.c \
+	lib/udivti3.c \
+	lib/umoddi3.c \
+	lib/umodti3.c
 
 SOURCES-EXCLUDE-i386 = \
-lib/builtins/absvti2.c \
-lib/builtins/addvti3.c \
-lib/builtins/ashlti3.c \
-lib/builtins/ashrti3.c \
-lib/builtins/clzti2.c \
-lib/builtins/cmpti2.c \
-lib/builtins/ctzti2.c \
-lib/builtins/divti3.c \
-lib/builtins/ffsti2.c \
-lib/builtins/fixdfti.c \
-lib/builtins/fixsfti.c \
-lib/builtins/fixunsdfti.c \
-lib/builtins/fixunssfti.c \
-lib/builtins/fixunsxfti.c \
-lib/builtins/fixxfti.c \
-lib/builtins/floattidf.c \
-lib/builtins/floattisf.c \
-lib/builtins/floattixf.c \
-lib/builtins/floatuntidf.c \
-lib/builtins/floatuntisf.c \
-lib/builtins/floatuntixf.c \
-lib/builtins/lshrti3.c \
-lib/builtins/modti3.c \
-lib/builtins/muloti4.c \
-lib/builtins/multi3.c \
-lib/builtins/mulvti3.c \
-lib/builtins/negti2.c \
-lib/builtins/negvti2.c \
-lib/builtins/parityti2.c \
-lib/builtins/popcountti2.c \
-lib/builtins/subvti3.c \
-lib/builtins/ucmpti2.c \
-lib/builtins/udivmodti4.c \
-lib/builtins/udivti3.c \
-lib/builtins/umodti3.c
+	lib/absvti2.c \
+	lib/addvti3.c \
+	lib/ashlti3.c \
+	lib/ashrti3.c \
+	lib/clzti2.c \
+	lib/cmpti2.c \
+	lib/ctzti2.c \
+	lib/divti3.c \
+	lib/ffsti2.c \
+	lib/fixdfti.c \
+	lib/fixsfti.c \
+	lib/fixunsdfti.c \
+	lib/fixunssfti.c \
+	lib/fixunsxfti.c \
+	lib/fixxfti.c \
+	lib/floattidf.c \
+	lib/floattisf.c \
+	lib/floattixf.c \
+	lib/floatuntidf.c \
+	lib/floatuntisf.c \
+	lib/floatuntixf.c \
+	lib/lshrti3.c \
+	lib/modti3.c \
+	lib/muloti4.c \
+	lib/multi3.c \
+	lib/mulvti3.c \
+	lib/negti2.c \
+	lib/negvti2.c \
+	lib/parityti2.c \
+	lib/popcountti2.c \
+	lib/subvti3.c \
+	lib/ucmpti2.c \
+	lib/udivmodti4.c \
+	lib/udivti3.c \
+	lib/umodti3.c
 
 define ArchTemplate
 
