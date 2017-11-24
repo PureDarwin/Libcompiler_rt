@@ -72,7 +72,7 @@ $(SYMROOT)/libcompiler_rt-static.a : $(foreach arch,$(RC_ARCHS), \
 # rule to make each archive slice for dyld (which removes a few archive members)
 $(OBJROOT)/libcompiler_rt-dyld-%.a : $(OBJROOT)/%/libcompiler_rt.a
 	cp $^ $@
-	DEL_LIST=`$(AR)  -t $@ | egrep 'apple_versioning|gcc_personality_v0|eprintf' | xargs echo` ; \
+	DEL_LIST=`ar  -t $@ | egrep 'apple_versioning|gcc_personality_v0|eprintf' | xargs echo` ; \
 	if [ -n "$${DEL_LIST}" ] ; \
 	then  \
 		ar -d $@ $${DEL_LIST}; \
