@@ -11,9 +11,9 @@
 
 #if __APPLE__
   #include <Availability.h>
-  
+
   #if __IPHONE_OS_VERSION_MIN_REQUIRED
-    #define NOT_HERE_BEFORE_10_6(sym) 
+    #define NOT_HERE_BEFORE_10_6(sym)
     #define NOT_HERE_IN_10_8_AND_EARLIER(sym) \
         extern const char sym##_tmp61 __asm("$ld$hide$os6.1$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp61 = 0; \
@@ -22,24 +22,24 @@
         extern const char sym##_tmp51 __asm("$ld$hide$os5.1$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp51 = 0; \
         extern const char sym##_tmp50 __asm("$ld$hide$os5.0$_" #sym ); \
-            __attribute__((visibility("default"))) const char sym##_tmp50 = 0; 
+            __attribute__((visibility("default"))) const char sym##_tmp50 = 0;
   #else
     #define NOT_HERE_BEFORE_10_6(sym) \
          extern const char sym##_tmp4 __asm("$ld$hide$os10.4$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp4 = 0; \
         extern const char sym##_tmp5 __asm("$ld$hide$os10.5$_" #sym ); \
-            __attribute__((visibility("default"))) const char sym##_tmp5 = 0; 
+            __attribute__((visibility("default"))) const char sym##_tmp5 = 0;
     #define NOT_HERE_IN_10_8_AND_EARLIER(sym) \
          extern const char sym##_tmp8 __asm("$ld$hide$os10.8$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp8 = 0; \
         extern const char sym##_tmp7 __asm("$ld$hide$os10.7$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp7 = 0; \
         extern const char sym##_tmp6 __asm("$ld$hide$os10.6$_" #sym ); \
-            __attribute__((visibility("default"))) const char sym##_tmp6 = 0; 
-  #endif 
+            __attribute__((visibility("default"))) const char sym##_tmp6 = 0;
+  #endif
 
 
-/* Symbols in libSystem.dylib in 10.6 and later, 
+/* Symbols in libSystem.dylib in 10.6 and later,
  *  but are in libgcc_s.dylib in earlier versions
  */
 
@@ -201,6 +201,57 @@ NOT_HERE_IN_10_8_AND_EARLIER(__atomic_store_2)
 NOT_HERE_IN_10_8_AND_EARLIER(__atomic_store_4)
 NOT_HERE_IN_10_8_AND_EARLIER(__atomic_store_8)
 
+#define DYLD_HIDE_SYMBOL(version, sym) \
+    extern const char sym##_hide_os##version __asm("$ld$hide$os10." #version "$_" #sym); \
+    __attribute__((visibility("default"))) const char sym##_hide_os##version = 0;
+
+#if __x86_64__
+DYLD_HIDE_SYMBOL(10, __extendhfsf2);
+DYLD_HIDE_SYMBOL(10, __truncdfhf2);
+DYLD_HIDE_SYMBOL(10, __truncsfhf2);
+DYLD_HIDE_SYMBOL(10, atomic_flag_clear);
+DYLD_HIDE_SYMBOL(10, atomic_flag_clear_explicit);
+DYLD_HIDE_SYMBOL(10, atomic_flag_test_and_set);
+DYLD_HIDE_SYMBOL(10, atomic_flag_test_and_set_explicit);
+DYLD_HIDE_SYMBOL(10, atomic_signal_fence);
+DYLD_HIDE_SYMBOL(10, atomic_thread_fence);
+DYLD_HIDE_SYMBOL(6, __extendhfsf2);
+DYLD_HIDE_SYMBOL(6, __truncdfhf2);
+DYLD_HIDE_SYMBOL(6, __truncsfhf2);
+DYLD_HIDE_SYMBOL(6, atomic_flag_clear);
+DYLD_HIDE_SYMBOL(6, atomic_flag_clear_explicit);
+DYLD_HIDE_SYMBOL(6, atomic_flag_test_and_set);
+DYLD_HIDE_SYMBOL(6, atomic_flag_test_and_set_explicit);
+DYLD_HIDE_SYMBOL(6, atomic_signal_fence);
+DYLD_HIDE_SYMBOL(6, atomic_thread_fence);
+DYLD_HIDE_SYMBOL(7, __extendhfsf2);
+DYLD_HIDE_SYMBOL(7, __truncdfhf2);
+DYLD_HIDE_SYMBOL(7, __truncsfhf2);
+DYLD_HIDE_SYMBOL(7, atomic_flag_clear);
+DYLD_HIDE_SYMBOL(7, atomic_flag_clear_explicit);
+DYLD_HIDE_SYMBOL(7, atomic_flag_test_and_set);
+DYLD_HIDE_SYMBOL(7, atomic_flag_test_and_set_explicit);
+DYLD_HIDE_SYMBOL(7, atomic_signal_fence);
+DYLD_HIDE_SYMBOL(7, atomic_thread_fence);
+DYLD_HIDE_SYMBOL(8, __extendhfsf2);
+DYLD_HIDE_SYMBOL(8, __truncdfhf2);
+DYLD_HIDE_SYMBOL(8, __truncsfhf2);
+DYLD_HIDE_SYMBOL(8, atomic_flag_clear);
+DYLD_HIDE_SYMBOL(8, atomic_flag_clear_explicit);
+DYLD_HIDE_SYMBOL(8, atomic_flag_test_and_set);
+DYLD_HIDE_SYMBOL(8, atomic_flag_test_and_set_explicit);
+DYLD_HIDE_SYMBOL(8, atomic_signal_fence);
+DYLD_HIDE_SYMBOL(8, atomic_thread_fence);
+DYLD_HIDE_SYMBOL(9, __extendhfsf2);
+DYLD_HIDE_SYMBOL(9, __truncdfhf2);
+DYLD_HIDE_SYMBOL(9, __truncsfhf2);
+DYLD_HIDE_SYMBOL(9, atomic_flag_clear);
+DYLD_HIDE_SYMBOL(9, atomic_flag_clear_explicit);
+DYLD_HIDE_SYMBOL(9, atomic_flag_test_and_set);
+DYLD_HIDE_SYMBOL(9, atomic_flag_test_and_set_explicit);
+DYLD_HIDE_SYMBOL(9, atomic_signal_fence);
+DYLD_HIDE_SYMBOL(9, atomic_thread_fence);
+#endif
 
 #if __arm__ && __DYNAMIC__
    #define NOT_HERE_UNTIL_AFTER_4_3(sym) \
@@ -217,8 +268,8 @@ NOT_HERE_IN_10_8_AND_EARLIER(__atomic_store_8)
         extern const char sym##_tmp6 __asm("$ld$hide$os4.2$_" #sym ); \
             __attribute__((visibility("default"))) const char sym##_tmp6 = 0; \
         extern const char sym##_tmp7 __asm("$ld$hide$os4.3$_" #sym ); \
-            __attribute__((visibility("default"))) const char sym##_tmp7 = 0; 
-            
+            __attribute__((visibility("default"))) const char sym##_tmp7 = 0;
+
 NOT_HERE_UNTIL_AFTER_4_3(__absvdi2)
 NOT_HERE_UNTIL_AFTER_4_3(__absvsi2)
 NOT_HERE_UNTIL_AFTER_4_3(__adddf3)
@@ -339,8 +390,8 @@ NOT_HERE_UNTIL_AFTER_4_3(__divmodsi4)
 NOT_HERE_UNTIL_AFTER_4_3(__udivmodsi4)
 #endif // __arm__ && __DYNAMIC__
 
-       
-       
+
+
 
 
 #else /* !__APPLE__ */
