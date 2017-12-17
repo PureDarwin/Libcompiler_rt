@@ -74,6 +74,8 @@ __inline static void lock(Lock *l) {
 static Lock locks[SPINLOCK_COUNT] = { [0 ...  SPINLOCK_COUNT-1] = {0,1,0} };
 
 #elif defined(__APPLE__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <libkern/OSAtomic.h>
 typedef OSSpinLock Lock;
 __inline static void unlock(Lock *l) {
@@ -84,6 +86,7 @@ __inline static void unlock(Lock *l) {
 __inline static void lock(Lock *l) {
   OSSpinLockLock(l);
 }
+#pragma clang diagnostic pop
 static Lock locks[SPINLOCK_COUNT]; // initialized to OS_SPINLOCK_INIT which is 0
 
 #else
