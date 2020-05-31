@@ -11,6 +11,9 @@
 		1F8896BA1FE628B000DAC290 /* udivmodti4.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F8C1FE61FCA004A2A3E /* udivmodti4.c */; };
 		1F8896BB1FE629A600DAC290 /* lshrdi3.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F731FE61FCA004A2A3E /* lshrdi3.c */; };
 		1F8896BC1FE629E200DAC290 /* fixunsxfti.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49FED1FE61FCA004A2A3E /* fixunsxfti.c */; };
+		1FA88130248466DA00EE6110 /* divtc3.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49FA41FE61FCA004A2A3E /* divtc3.c */; };
+		1FA88131248466E600EE6110 /* fixtfdi.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F9B1FE61FCA004A2A3E /* fixtfdi.c */; };
+		1FA881322484678500EE6110 /* multc3.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49FB41FE61FCA004A2A3E /* multc3.c */; };
 		1FD4A0D71FE6214E004A2A3E /* extendsftf2.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F711FE61FCA004A2A3E /* extendsftf2.c */; };
 		1FD4A0D81FE6214E004A2A3E /* fixdfti.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F721FE61FCA004A2A3E /* fixdfti.c */; };
 		1FD4A0DB1FE6214E004A2A3E /* clzti2.c in Sources */ = {isa = PBXBuildFile; fileRef = 1FD49F751FE61FCA004A2A3E /* clzti2.c */; };
@@ -667,6 +670,7 @@
 				1FD4A0D81FE6214E004A2A3E /* fixdfti.c in Sources */,
 				1FD4A0DB1FE6214E004A2A3E /* clzti2.c in Sources */,
 				1FD4A0E21FE6214E004A2A3E /* udivmoddi4.c in Sources */,
+				1FA88131248466E600EE6110 /* fixtfdi.c in Sources */,
 				1FD4A0E31FE6214E004A2A3E /* fixunsxfdi.c in Sources */,
 				1FD4A0E41FE6214E004A2A3E /* powitf2.c in Sources */,
 				1FD4A0E51FE6214E004A2A3E /* multi3.c in Sources */,
@@ -695,6 +699,7 @@
 				1FD4A1051FE6214E004A2A3E /* trunctfdf2.c in Sources */,
 				1FD4A1071FE6214E004A2A3E /* atomic_signal_fence.c in Sources */,
 				1FD4A1091FE6214E004A2A3E /* cmpdi2.c in Sources */,
+				1FA88130248466DA00EE6110 /* divtc3.c in Sources */,
 				1FD4A10A1FE6214E004A2A3E /* floatuntidf.c in Sources */,
 				1FD4A10B1FE6214E004A2A3E /* muldi3.c in Sources */,
 				1FD4A10C1FE6214E004A2A3E /* powisf2.c in Sources */,
@@ -773,6 +778,7 @@
 				1FD4A16B1FE6214E004A2A3E /* ashrdi3.c in Sources */,
 				1FD4A16C1FE6214E004A2A3E /* powixf2.c in Sources */,
 				1FD4A16D1FE6214E004A2A3E /* floattidf.c in Sources */,
+				1FA881322484678500EE6110 /* multc3.c in Sources */,
 				1FD4A16E1FE6214E004A2A3E /* moddi3.c in Sources */,
 				1FD4A1701FE6214E004A2A3E /* mulvti3.c in Sources */,
 				1FD4A1721FE6214E004A2A3E /* fixunssfti.c in Sources */,
