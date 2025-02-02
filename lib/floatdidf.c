@@ -14,6 +14,10 @@
 
 #include "int_lib.h"
 
+// ZORMEISTER: Gatekeep code for ARM64 so we don't conflict with the x86_64 implementations.
+// ZORMEISTER: This breaks literally any other build of Compiler-RT, but we're only using this for x86_64/ARM64, right?
+#if defined(__arm64__)
+
 /* Returns: convert a to a double, rounding toward even. */
 
 /* Assumption: double is a IEEE 64 bit floating point type
@@ -105,8 +109,13 @@ __floatdidf(di_int a)
 #endif
 
 #if defined(__ARM_EABI__)
+#if defined(COMPILER_RT_ARMHF_TARGET)
 AEABI_RTABI double __aeabi_l2d(di_int a) {
   return __floatdidf(a);
 }
+#else
+AEABI_RTABI double __aeabi_l2d(di_int a) COMPILER_RT_ALIAS(__floatdidf);
+#endif
 #endif
 
+#endif

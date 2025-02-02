@@ -16,6 +16,10 @@
 
 #include "int_lib.h"
 
+// ZORMEISTER: Gatekeep code for ARM64 so we don't conflict with the x86_64 implementations.
+// ZORMEISTER: This breaks literally any other build of Compiler-RT, but we're only using this for x86_64/ARM64, right?
+#if defined(__arm64__)
+
 /* Returns: convert a to a long double, rounding toward even. */
 
 /* Assumption: long double is a IEEE 80 bit floating point type padded to 128 bits
@@ -42,5 +46,7 @@ __floatdixf(di_int a)
     fb.u.low.all = a << clz;                    /* mantissa */
     return fb.f;
 }
+
+#endif
 
 #endif /* !_ARCH_PPC */

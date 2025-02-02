@@ -22,6 +22,10 @@
 
 #include "int_lib.h"
 
+// ZORMEISTER: Gatekeep code for ARM64 so we don't conflict with the x86_64 implementations.
+// ZORMEISTER: This breaks literally any other build of Compiler-RT, but we're only using this for x86_64/ARM64, right?
+#if defined(__arm64__)
+
 #ifndef __SOFT_FP__
 /* Support for systems that have hardware floating-point; we'll set the inexact flag
  * as a side-effect of this computation.
@@ -104,8 +108,13 @@ __floatundidf(du_int a)
 #endif
 
 #if defined(__ARM_EABI__)
+#if defined(COMPILER_RT_ARMHF_TARGET)
 AEABI_RTABI double __aeabi_ul2d(du_int a) {
   return __floatundidf(a);
 }
+#else
+AEABI_RTABI double __aeabi_ul2d(du_int a) COMPILER_RT_ALIAS(__floatundidf);
+#endif
 #endif
 
+#endif
